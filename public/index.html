@@ -1,20 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
     <title>People's News</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Leaflet CSS for React-Leaflet maps -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      integrity="sha256-sA+4J08z0C4U8N1KpVQbZqLx3N26wEJ5p3p6Zf8AFlQ="
+      crossorigin=""
+    />
+
     <style>
-      /* Prevent white flash on dark mode */
-      body { margin: 0; background: #f2f4f7; font-family: Arial, sans-serif; }
-      #root { min-height: 100vh; }
+      body {
+        margin: 0;
+      }
+      #root {
+        min-height: 100vh;
+      }
     </style>
   </head>
-
   <body>
-    <!-- React mounts the entire app here -->
+    <noscript>You need to enable JavaScript to run People's News.</noscript>
     <div id="root"></div>
-
-    <!-- CRA/StackBlitz will inject scripts automatically -->
   </body>
 </html>
