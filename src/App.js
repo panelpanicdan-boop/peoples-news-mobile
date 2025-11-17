@@ -1,5 +1,5 @@
-// COMPLETE APP.JS WITH MODAL VIEWER INTEGRATED
-// Ready to paste directly into src/App.js
+// COMPLETE UPDATED APP.JS (COPY + PASTE THIS DIRECTLY INTO src/App.js)
+// Includes setTab passed into AccountTab + all tabs wired correctly
 
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -18,10 +18,10 @@ import LiveTab from "./tabs/LiveTab";
 import AccountTab from "./tabs/AccountTab";
 import SettingsTab from "./tabs/SettingsTab";
 
-// IMPORT MODAL VIEWER
+// MODAL VIEWER
 import ModalViewer from "./components/ModalViewer";
 
-// MOCK FEED DATA
+// MOCK POSTS
 const MOCK_POSTS = [
   {
     id: "p1",
@@ -57,16 +57,11 @@ const MOCK_POSTS = [
 ];
 
 export default function App() {
-  // ACTIVE TAB
   const [tab, setTab] = useState("feed");
-
-  // FEED MODE
   const [feedMode, setFeedMode] = useState("interested");
-
-  // DARK MODE
   const [darkMode, setDarkMode] = useState(false);
+  const [posts, setPosts] = useState(MOCK_POSTS);
 
-  // USER
   const [user, setUser] = useState(() => ({
     id: "demo_user",
     name: "DemoUser",
@@ -78,31 +73,25 @@ export default function App() {
     uploads: [],
   }));
 
-  // POSTS
-  const [posts, setPosts] = useState(MOCK_POSTS);
-
-  // LIVE
   const [isLive, setIsLive] = useState(false);
   const [usersLive, setUsersLive] = useState(42);
-
-  // MODAL VIEWER
   const [modalPost, setModalPost] = useState(null);
-
-  // BOTTOM NAV
   const [showNav, setShowNav] = useState(true);
   const lastScrollY = useRef(0);
 
+  // Hide bottom nav when scrolling
   useEffect(() => {
-    function onScroll() {
+    function handleScroll() {
       const y = window.scrollY;
       if (y > lastScrollY.current + 12) setShowNav(false);
       else if (y < lastScrollY.current - 12) setShowNav(true);
       lastScrollY.current = y;
     }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Random live counter fluctuation
   useEffect(() => {
     const t = setInterval(() => {
       setUsersLive((v) => Math.max(1, v + Math.floor(Math.random() * 7 - 3)));
@@ -110,6 +99,7 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
+  // Dark mode styling
   useEffect(() => {
     document.body.style.background = darkMode ? "#060c12" : "#f2f4f7";
     document.body.style.color = darkMode ? "#e6eef8" : "#111";
@@ -121,7 +111,7 @@ export default function App() {
     if (ageDays < 7) return alert("Account must be at least 7 days old.");
     setIsLive(true);
     setUsersLive((v) => v + 1);
-    alert("You are now LIVE (mock)");
+    alert("You're now LIVE (mock)");
   }
 
   function stopLive() {
@@ -163,6 +153,7 @@ export default function App() {
             setUser={setUser}
             posts={posts}
             setModalPost={setModalPost}
+            setTab={setTab} // ⭐ IMPORTANT
           />
         )}
 
@@ -178,7 +169,7 @@ export default function App() {
           />
         )}
 
-        {/* Spacer */}
+        {/* Spacer for bottom nav */}
         <div style={{ height: 120 }}></div>
       </main>
 
@@ -210,28 +201,34 @@ function BottomNav({ tab, setTab, showNav }) {
         opacity: showNav ? 1 : 0,
       }}
     >
-      <div style={styles.navBtn} onClick={() => setTab("feed")}>        <FaHome size={20} />
+      <div style={styles.navBtn} onClick={() => setTab("feed")}>
+        <FaHome size={20} />
         <div style={styles.navLabel}>Feed</div>
       </div>
 
-      <div style={styles.navBtn} onClick={() => setTab("upload")}>        <FaUpload size={20} />
+      <div style={styles.navBtn} onClick={() => setTab("upload")}>
+        <FaUpload size={20} />
         <div style={styles.navLabel}>Upload</div>
       </div>
 
-      <div style={styles.liveBtn} onClick={() => setTab("live")}>        <FaBroadcastTower size={22} color="#fff" />
+      <div style={styles.liveBtn} onClick={() => setTab("live")}>
+        <FaBroadcastTower size={22} color="#fff" />
       </div>
 
-      <div style={styles.navBtn} onClick={() => setTab("camera")}>        <FaCamera size={20} />
+      <div style={styles.navBtn} onClick={() => setTab("camera")}>
+        <FaCamera size={20} />
         <div style={styles.navLabel}>Camera</div>
       </div>
 
-      <div style={styles.navBtn} onClick={() => setTab("account")}>        <FaUser size={20} />
+      <div style={styles.navBtn} onClick={() => setTab("account")}>
+        <FaUser size={20} />
         <div style={styles.navLabel}>Account</div>
       </div>
     </nav>
   );
 }
 
+// STYLES (complete — do not truncate)
 const styles = {
   app: {
     fontFamily: "Inter, Arial, sans-serif",
@@ -245,11 +242,9 @@ const styles = {
     background: "#060c12",
     color: "#e6eef8",
   },
-
   container: {
     padding: "16px",
   },
-
   header: {
     position: "sticky",
     top: 0,
@@ -261,19 +256,16 @@ const styles = {
     background: "rgba(255,255,255,0.65)",
     borderBottom: "1px solid rgba(0,0,0,0.08)",
   },
-
   logo: {
     fontSize: 20,
     fontWeight: 900,
     letterSpacing: 0.5,
   },
-
   liveCounter: {
     fontSize: 13,
     fontWeight: 700,
     color: "#0077ff",
   },
-
   bottomNav: {
     position: "fixed",
     bottom: 0,
@@ -288,7 +280,6 @@ const styles = {
     transition: "0.3s ease",
     zIndex: 100,
   },
-
   navBtn: {
     display: "flex",
     flexDirection: "column",
@@ -296,11 +287,9 @@ const styles = {
     cursor: "pointer",
     fontSize: 12,
   },
-
   navLabel: {
     marginTop: 3,
   },
-
   liveBtn: {
     width: 65,
     height: 65,
@@ -313,3 +302,5 @@ const styles = {
     boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
   },
 };
+
+export default App;
