@@ -1,8 +1,9 @@
-// src/tabs/AccountTab.js — Modern with mock photos + modal viewer support
+// src/tabs/AccountTab.js — Modern with mock photos + modal viewer + settings button
 
 import React from "react";
+import { FaCog } from "react-icons/fa";
 
-export default function AccountTab({ user, posts, setModalPost }) {
+export default function AccountTab({ user, posts, setModalPost, setTab }) {
   // Mock fallback posts (shown if user has no uploads)
   const mockDefaults = [
     { id: "m1", user: "You", img: "https://picsum.photos/seed/mock1/500", views: 23 },
@@ -26,6 +27,11 @@ export default function AccountTab({ user, posts, setModalPost }) {
 
   return (
     <section style={styles.page}>
+      
+      {/* SETTINGS ICON (TOP RIGHT) */}
+      <div style={styles.settingsIcon} onClick={() => setTab("settings")}>
+        <FaCog size={22} />
+      </div>
 
       {/* PROFILE HEADER */}
       <div style={styles.profileCard}>
@@ -90,7 +96,20 @@ export default function AccountTab({ user, posts, setModalPost }) {
 
 const styles = {
   page: {
-    paddingBottom: 30
+    paddingBottom: 30,
+    position: "relative",
+  },
+
+  settingsIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    padding: 10,
+    background: "white",
+    borderRadius: "50%",
+    boxShadow: "0 3px 12px rgba(0,0,0,0.2)",
+    cursor: "pointer",
+    zIndex: 20,
   },
 
   profileCard: {
@@ -100,53 +119,53 @@ const styles = {
     marginBottom: 20,
     boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
     display: "flex",
-    gap: 16
+    gap: 16,
   },
 
   avatar: {
     width: 80,
     height: 80,
     borderRadius: "50%",
-    background: "#ccc"
+    background: "#ccc",
   },
 
   info: {
-    flex: 1
+    flex: 1,
   },
 
   username: {
     margin: 0,
     fontSize: 20,
-    fontWeight: 900
+    fontWeight: 900,
   },
 
   bio: {
     fontSize: 14,
     marginTop: 4,
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   statsRow: {
     display: "flex",
-    gap: 20
+    gap: 20,
   },
 
   statBox: {
     fontSize: 13,
-    textAlign: "center"
+    textAlign: "center",
   },
 
   sectionTitle: {
     marginTop: 20,
     marginBottom: 10,
     fontSize: 16,
-    fontWeight: 700
+    fontWeight: 700,
   },
 
   topRow: {
     display: "flex",
     gap: 10,
-    marginBottom: 20
+    marginBottom: 20,
   },
 
   topItem: {
@@ -155,13 +174,13 @@ const styles = {
     overflow: "hidden",
     position: "relative",
     boxShadow: "0 4px 15px rgba(0,0,0,0.22)",
-    cursor: "pointer"
+    cursor: "pointer",
   },
 
   topImg: {
     width: "100%",
     height: 140,
-    objectFit: "cover"
+    objectFit: "cover",
   },
 
   overlay: {
@@ -172,13 +191,13 @@ const styles = {
     background: "rgba(0,0,0,0.55)",
     color: "white",
     fontSize: 12,
-    textAlign: "center"
+    textAlign: "center",
   },
 
   grid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr 1fr",
-    gap: 6
+    gap: 6,
   },
 
   gridImg: {
@@ -187,7 +206,6 @@ const styles = {
     borderRadius: 10,
     objectFit: "cover",
     boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
-    cursor: "pointer"
-  }
+    cursor: "pointer",
+  },
 };
-
