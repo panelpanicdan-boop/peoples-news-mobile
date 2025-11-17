@@ -1,4 +1,4 @@
-// src/App.js — Bold Premium Version with Ticker + Modal Viewer
+// src/App.js — Bold premium, with MapTab + ticker modes
 
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   FaCamera,
   FaBroadcastTower,
   FaCog,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 import FeedTab from "./tabs/FeedTab";
@@ -16,9 +17,10 @@ import CameraTab from "./tabs/CameraTab";
 import LiveTab from "./tabs/LiveTab";
 import AccountTab from "./tabs/AccountTab";
 import SettingsTab from "./tabs/SettingsTab";
+import MapTab from "./tabs/MapTab";
 import ModalViewer from "./components/ModalViewer";
 
-// Inject ticker keyframes once
+// ticker keyframes
 const globalStyles = `
 @keyframes tickerScroll {
   0% { transform: translateX(100%); }
@@ -32,7 +34,9 @@ if (typeof document !== "undefined" && !document.getElementById("ticker-styles")
   document.head.appendChild(styleTag);
 }
 
-// Mock posts (including Beep Boop ad INSIDE the feed only)
+const now = Date.now();
+
+// Mock posts – with location + lat/lng for map
 const MOCK_POSTS = [
   {
     id: "p1",
@@ -40,7 +44,12 @@ const MOCK_POSTS = [
     cat: "Event",
     text: "Street festival on Main — lots of people!",
     img: "https://placekitten.com/400/300",
-    views: 120,
+    views: 1200,
+    location: "Downtown East Orange, NJ",
+    lat: 40.7673,
+    lng: -74.2049,
+    createdAt: now - 1000 * 60 * 45, // 45m ago
+    verifiedUser: true,
   },
   {
     id: "p2",
@@ -48,7 +57,11 @@ const MOCK_POSTS = [
     cat: "Accident",
     text: "Two-car accident on Rt. 10. Expect delays.",
     img: "https://placebear.com/400/300",
-    views: 500,
+    views: 5240,
+    location: "Rt. 10 near Ridgedale Ave",
+    lat: 40.8232,
+    lng: -74.3641,
+    createdAt: now - 1000 * 60 * 20, // 20m ago
   },
   {
     id: "ad1",
@@ -56,6 +69,7 @@ const MOCK_POSTS = [
     brand: "Beep Boop",
     img: "https://picsum.photos/seed/ad1/600/240",
     text: "Beep Boop — delivering joy to your door.",
+    views: 9000,
   },
   {
     id: "p3",
@@ -63,7 +77,11 @@ const MOCK_POSTS = [
     cat: "Weather",
     text: "Sudden hailstorm downtown!",
     img: "https://picsum.photos/seed/wx1/400/300",
-    views: 78,
+    views: 780,
+    location: "Downtown Newark, NJ",
+    lat: 40.7357,
+    lng: -74.1724,
+    createdAt: now - 1000 * 60 * 120, // 2h ago
   },
 ];
 
@@ -94,11 +112,10 @@ export default function App() {
   const [modalPost, setModalPost] = useState(null);
 
   const [showTicker, setShowTicker] = useState(true);
-  const [tickerText, setTickerText] = useState(
-    "AAPL +2.3% | TSLA +1.2% | BREAKING: New eyewitness uploads in your area | Beep Boop: Sponsored segment | System: All services operational."
-  );
+  const [tickerMode, setTickerMode] = useState("all");
+  const [tickerText, setTickerText] = useState("");
 
-  // Hide/show bottom nav on scroll
+  // hide/show bottom nav on scroll
   useEffect(() => {
     function onScroll() {
       const y = window.scrollY;
@@ -110,7 +127,7 @@ export default function App() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Random live user fluctuation
+  // random live user fluctuation
   useEffect(() => {
     const t = setInterval(() => {
       setUsersLive((v) => Math.max(1, v + Math.floor(Math.random() * 7 - 3)));
@@ -118,13 +135,40 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  // Dark mode styling
+  // dark mode background
   useEffect(() => {
     document.body.style.background = darkMode
       ? "radial-gradient(circle at top, #111827 0, #020617 40%, #000 100%)"
       : "#f3f4f6";
     document.body.style.color = darkMode ? "#e5e7eb" : "#111827";
   }, [darkMode]);
+
+  // ticker generator based on mode
+  useEffect(() => {
+    if (tickerMode === "custom") return; // let user control text
+    const pieces = [];
+
+    if (tickerMode === "stocks" || tickerMode === "all") {
+      pieces.push("AAPL +1.2%");
+      pieces.push("TSLA -0.8%");
+      pieces.push("NVDA +3.4%");
+      pieces.push("META +2.1%");
+    }
+    if (tickerMode === "breaking" || tickerMode === "all") {
+      pieces.push("BREAKING: New eyewitness uploads hitting the feed");
+    }
+    if (tickerMode === "weather" || tickerMode === "all") {
+      pieces.push("Weather: Storms possible in the next 2 hours");
+    }
+    if (tickerMode === "traffic" || tickerMode === "all") {
+      pieces.push("Traffic: Accident on Rt. 10 near Ridgedale Ave");
+    }
+    if (tickerMode === "local" || tickerMode === "all") {
+      pieces.push("Local: Community event at Main St. tonight 7PM");
+    }
+
+    setTickerText(pieces.join(" | "));
+  }, [tickerMode]);
 
   function handleGoLive() {
     const ageDays = (Date.now() - user.joinedAt) / (1000 * 60 * 60 * 24);
@@ -148,6 +192,7 @@ export default function App() {
         usersLive={usersLive}
         showTicker={showTicker}
         tickerText={tickerText}
+        onOpenMap={() => setTab("map")}
       />
 
       <main style={styles.container}>
@@ -193,16 +238,20 @@ export default function App() {
             stopLive={stopLive}
             showTicker={showTicker}
             setShowTicker={setShowTicker}
+            tickerMode={tickerMode}
+            setTickerMode={setTickerMode}
             tickerText={tickerText}
             setTickerText={setTickerText}
           />
         )}
 
-        {/* Spacer so content doesn't hide behind nav */}
+        {tab === "map" && (
+          <MapTab posts={posts} setModalPost={setModalPost} />
+        )}
+
         <div style={{ height: 120 }} />
       </main>
 
-      {/* Modal viewer for posts */}
       {modalPost && (
         <ModalViewer post={modalPost} onClose={() => setModalPost(null)} />
       )}
@@ -212,15 +261,21 @@ export default function App() {
   );
 }
 
-// HEADER WITH TICKER
-function Header({ usersLive, showTicker, tickerText }) {
+// HEADER with map button above live counter
+function Header({ usersLive, showTicker, tickerText, onOpenMap }) {
   return (
     <header style={styles.header}>
       <div style={styles.headerTop}>
         <div style={styles.logo}>People&apos;s News</div>
-        <div style={styles.liveBadge}>
-          <span style={{ marginRight: 6, fontSize: 11 }}>LIVE USERS</span>
-          <span>{usersLive}</span>
+        <div style={styles.headerRight}>
+          <button style={styles.mapBtn} onClick={onOpenMap}>
+            <FaMapMarkerAlt size={14} style={{ marginRight: 4 }} />
+            Map
+          </button>
+          <div style={styles.liveBadge}>
+            <span style={{ marginRight: 6, fontSize: 11 }}>LIVE USERS</span>
+            <span>{usersLive}</span>
+          </div>
         </div>
       </div>
 
@@ -235,7 +290,7 @@ function Header({ usersLive, showTicker, tickerText }) {
   );
 }
 
-// BOTTOM NAVIGATION
+// Bottom nav
 function BottomNav({ tab, setTab, showNav }) {
   return (
     <nav
@@ -296,7 +351,6 @@ function BottomNav({ tab, setTab, showNav }) {
   );
 }
 
-// STYLES
 const styles = {
   app: {
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
@@ -328,13 +382,32 @@ const styles = {
   headerTop: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 6,
   },
   logo: {
     fontSize: 20,
     fontWeight: 900,
     letterSpacing: 0.5,
+  },
+  headerRight: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 4,
+  },
+  mapBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "4px 10px",
+    borderRadius: 999,
+    border: "none",
+    background: "rgba(15,23,42,0.9)",
+    color: "#f9fafb",
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
   },
   liveBadge: {
     display: "inline-flex",
