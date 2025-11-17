@@ -1,57 +1,44 @@
-// src/tabs/FeedTab.js
-// Clean modular Feed tab for People's News
-// This file replaces the inline Feed component in App.js
-// It expects props: feedItems, feedMode, setFeedMode
-
+// src/tabs/FeedTab.js — FULLY UPDATED FOR MODAL VIEWER
 import React from "react";
+import AdCard from "../components/AdCard";
 
-export default function FeedTab({ feedItems, feedMode, setFeedMode, PostCard, AdCard }) {
-  const outlineBtnBase = {
-    display: "inline-block",
-    padding: "8px 12px",
-    borderRadius: 10,
-    border: "1px solid rgba(0,0,0,0.12)",
-    background: "transparent",
-    cursor: "pointer",
-  };
-
+export default function FeedTab({ posts, feedMode, setFeedMode, setModalPost }) {
   return (
-    <section>
-      <div style={styles.feedHeader}>
-        <div>
-          <button
-            style={{
-              ...outlineBtnBase,
-              marginRight: 8,
-              borderColor: feedMode === "following" ? "#007bff" : "rgba(0,0,0,0.12)",
-            }}
-            onClick={() => setFeedMode("following")}
-          >
-            Following
-          </button>
-
-          <button
-            style={{
-              ...outlineBtnBase,
-              borderColor: feedMode === "interested" ? "#007bff" : "rgba(0,0,0,0.12)",
-            }}
-            onClick={() => setFeedMode("interested")}
-          >
-            Interested
-          </button>
-        </div>
-
-        <div style={{ fontSize: 13 }}>
-          {feedItems.filter((f) => !f.ad).length} posts
-        </div>
+    <section style={styles.page}>
+      {/* FEED MODE SWITCH */}
+      <div style={styles.toggleRow}>
+        <button
+          style={feedMode === "following" ? styles.modeActive : styles.modeBtn}
+          onClick={() => setFeedMode("following")}
+        >
+          Following
+        </button>
+        <button
+          style={feedMode === "interested" ? styles.modeActive : styles.modeBtn}
+          onClick={() => setFeedMode("interested")}
+        >
+          Interested
+        </button>
       </div>
 
-      <div style={{ marginTop: 12 }}>
-        {feedItems.map((item) => (
-          item.ad ? (
-            <AdCard key={item.id} ad={item} />
+      {/* FEED LIST */}
+      <div>
+        {posts.map((p) => (
+          p.ad ? (
+            <AdCard key={p.id} ad={p} />
           ) : (
-            <PostCard key={item.id} post={item} />
+            <div
+              key={p.id}
+              style={styles.card}
+              onClick={() => setModalPost(p)}
+            >
+              <img src={p.img} alt="post" style={styles.img} />
+              <div style={styles.cardBody}>
+                <div style={styles.user}>{p.user}</div>
+                <div style={styles.text}>{p.text}</div>
+                <div style={styles.stats}>Views: {p.views ?? 0}</div>
+              </div>
+            </div>
           )
         ))}
       </div>
@@ -59,11 +46,58 @@ export default function FeedTab({ feedItems, feedMode, setFeedMode, PostCard, Ad
   );
 }
 
-// Local styles for this tab (kept minimal so App.js styles still apply)
 const styles = {
-  feedHeader: {
+  page: {
+    paddingBottom: 30,
+  },
+  toggleRow: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 20,
+  },
+  modeBtn: {
+    padding: "8px 16px",
+    background: "#ddd",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+  },
+  modeActive: {
+    padding: "8px 16px",
+    background: "#0077ff",
+    color: "white",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+    boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
+  },
+  card: {
+    background: "white",
+    borderRadius: 14,
+    marginBottom: 18,
+    overflow: "hidden",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
+    cursor: "pointer",
+  },
+  img: {
+    width: "100%",
+    height: 240,
+    objectFit: "cover",
+  },
+  cardBody: {
+    padding: 12,
+  },
+  user: {
+    fontWeight: 700,
+    marginBottom: 6,
+  },
+  text: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  stats: {
+    fontSize: 12,
+    color: "#777",
   },
 };
