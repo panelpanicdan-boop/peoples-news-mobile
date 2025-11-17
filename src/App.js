@@ -1,5 +1,4 @@
-// COMPLETE UPDATED APP.JS (COPY + PASTE THIS DIRECTLY INTO src/App.js)
-// Includes setTab passed into AccountTab + all tabs wired correctly
+// src/App.js — Bold Premium Version with Ticker + Modal Viewer
 
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -8,20 +7,32 @@ import {
   FaUser,
   FaCamera,
   FaBroadcastTower,
+  FaCog,
 } from "react-icons/fa";
 
-// IMPORT ALL TABS
 import FeedTab from "./tabs/FeedTab";
 import UploadTab from "./tabs/UploadTab";
 import CameraTab from "./tabs/CameraTab";
 import LiveTab from "./tabs/LiveTab";
 import AccountTab from "./tabs/AccountTab";
 import SettingsTab from "./tabs/SettingsTab";
-
-// MODAL VIEWER
 import ModalViewer from "./components/ModalViewer";
 
-// MOCK POSTS
+// Inject ticker keyframes once
+const globalStyles = `
+@keyframes tickerScroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-130%); }
+}
+`;
+if (typeof document !== "undefined" && !document.getElementById("ticker-styles")) {
+  const styleTag = document.createElement("style");
+  styleTag.id = "ticker-styles";
+  styleTag.innerHTML = globalStyles;
+  document.head.appendChild(styleTag);
+}
+
+// Mock posts (including Beep Boop ad INSIDE the feed only)
 const MOCK_POSTS = [
   {
     id: "p1",
@@ -60,7 +71,6 @@ export default function App() {
   const [tab, setTab] = useState("feed");
   const [feedMode, setFeedMode] = useState("interested");
   const [darkMode, setDarkMode] = useState(false);
-  const [posts, setPosts] = useState(MOCK_POSTS);
 
   const [user, setUser] = useState(() => ({
     id: "demo_user",
@@ -73,25 +83,34 @@ export default function App() {
     uploads: [],
   }));
 
+  const [posts, setPosts] = useState(MOCK_POSTS);
+
   const [isLive, setIsLive] = useState(false);
   const [usersLive, setUsersLive] = useState(42);
-  const [modalPost, setModalPost] = useState(null);
+
   const [showNav, setShowNav] = useState(true);
   const lastScrollY = useRef(0);
 
-  // Hide bottom nav when scrolling
+  const [modalPost, setModalPost] = useState(null);
+
+  const [showTicker, setShowTicker] = useState(true);
+  const [tickerText, setTickerText] = useState(
+    "AAPL +2.3% | TSLA +1.2% | BREAKING: New eyewitness uploads in your area | Beep Boop: Sponsored segment | System: All services operational."
+  );
+
+  // Hide/show bottom nav on scroll
   useEffect(() => {
-    function handleScroll() {
+    function onScroll() {
       const y = window.scrollY;
       if (y > lastScrollY.current + 12) setShowNav(false);
       else if (y < lastScrollY.current - 12) setShowNav(true);
       lastScrollY.current = y;
     }
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Random live counter fluctuation
+  // Random live user fluctuation
   useEffect(() => {
     const t = setInterval(() => {
       setUsersLive((v) => Math.max(1, v + Math.floor(Math.random() * 7 - 3)));
@@ -101,17 +120,20 @@ export default function App() {
 
   // Dark mode styling
   useEffect(() => {
-    document.body.style.background = darkMode ? "#060c12" : "#f2f4f7";
-    document.body.style.color = darkMode ? "#e6eef8" : "#111";
+    document.body.style.background = darkMode
+      ? "radial-gradient(circle at top, #111827 0, #020617 40%, #000 100%)"
+      : "#f3f4f6";
+    document.body.style.color = darkMode ? "#e5e7eb" : "#111827";
   }, [darkMode]);
 
   function handleGoLive() {
     const ageDays = (Date.now() - user.joinedAt) / (1000 * 60 * 60 * 24);
-    if (!user.verified) return alert("Verify identity to go live.");
-    if (ageDays < 7) return alert("Account must be at least 7 days old.");
+    if (!user.verified) return alert("Verify your identity to go live.");
+    if (ageDays < 7)
+      return alert("Your account must be at least 7 days old to go live.");
     setIsLive(true);
     setUsersLive((v) => v + 1);
-    alert("You're now LIVE (mock)");
+    alert("You are now LIVE (mock)");
   }
 
   function stopLive() {
@@ -122,7 +144,11 @@ export default function App() {
 
   return (
     <div style={darkMode ? styles.appDark : styles.app}>
-      <Header usersLive={usersLive} />
+      <Header
+        usersLive={usersLive}
+        showTicker={showTicker}
+        tickerText={tickerText}
+      />
 
       <main style={styles.container}>
         {tab === "feed" && (
@@ -153,7 +179,6 @@ export default function App() {
             setUser={setUser}
             posts={posts}
             setModalPost={setModalPost}
-            setTab={setTab} // ⭐ IMPORTANT
           />
         )}
 
@@ -166,14 +191,18 @@ export default function App() {
             isLive={isLive}
             handleGoLive={handleGoLive}
             stopLive={stopLive}
+            showTicker={showTicker}
+            setShowTicker={setShowTicker}
+            tickerText={tickerText}
+            setTickerText={setTickerText}
           />
         )}
 
-        {/* Spacer for bottom nav */}
-        <div style={{ height: 120 }}></div>
+        {/* Spacer so content doesn't hide behind nav */}
+        <div style={{ height: 120 }} />
       </main>
 
-      {/* MODAL VIEWER */}
+      {/* Modal viewer for posts */}
       {modalPost && (
         <ModalViewer post={modalPost} onClose={() => setModalPost(null)} />
       )}
@@ -183,15 +212,30 @@ export default function App() {
   );
 }
 
-function Header({ usersLive }) {
+// HEADER WITH TICKER
+function Header({ usersLive, showTicker, tickerText }) {
   return (
     <header style={styles.header}>
-      <div style={styles.logo}>People's News</div>
-      <div style={styles.liveCounter}>{usersLive} live</div>
+      <div style={styles.headerTop}>
+        <div style={styles.logo}>People&apos;s News</div>
+        <div style={styles.liveBadge}>
+          <span style={{ marginRight: 6, fontSize: 11 }}>LIVE USERS</span>
+          <span>{usersLive}</span>
+        </div>
+      </div>
+
+      {showTicker && (
+        <div style={styles.tickerShell}>
+          <div style={styles.tickerTrack}>
+            <span style={styles.tickerText}>{tickerText}</span>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
 
+// BOTTOM NAVIGATION
 function BottomNav({ tab, setTab, showNav }) {
   return (
     <nav
@@ -201,106 +245,179 @@ function BottomNav({ tab, setTab, showNav }) {
         opacity: showNav ? 1 : 0,
       }}
     >
-      <div style={styles.navBtn} onClick={() => setTab("feed")}>
+      <button
+        style={tab === "feed" ? styles.navBtnActive : styles.navBtn}
+        onClick={() => setTab("feed")}
+      >
         <FaHome size={20} />
-        <div style={styles.navLabel}>Feed</div>
-      </div>
+        <span style={styles.navLabel}>Feed</span>
+      </button>
 
-      <div style={styles.navBtn} onClick={() => setTab("upload")}>
+      <button
+        style={tab === "upload" ? styles.navBtnActive : styles.navBtn}
+        onClick={() => setTab("upload")}
+      >
         <FaUpload size={20} />
-        <div style={styles.navLabel}>Upload</div>
-      </div>
+        <span style={styles.navLabel}>Upload</span>
+      </button>
 
-      <div style={styles.liveBtn} onClick={() => setTab("live")}>
-        <FaBroadcastTower size={22} color="#fff" />
-      </div>
+      <button
+        style={styles.liveFab}
+        onClick={() => setTab("live")}
+        aria-label="Go Live"
+      >
+        <FaBroadcastTower size={24} />
+      </button>
 
-      <div style={styles.navBtn} onClick={() => setTab("camera")}>
+      <button
+        style={tab === "camera" ? styles.navBtnActive : styles.navBtn}
+        onClick={() => setTab("camera")}
+      >
         <FaCamera size={20} />
-        <div style={styles.navLabel}>Camera</div>
-      </div>
+        <span style={styles.navLabel}>Camera</span>
+      </button>
 
-      <div style={styles.navBtn} onClick={() => setTab("account")}>
+      <button
+        style={tab === "account" ? styles.navBtnActive : styles.navBtn}
+        onClick={() => setTab("account")}
+      >
         <FaUser size={20} />
-        <div style={styles.navLabel}>Account</div>
-      </div>
+        <span style={styles.navLabel}>Account</span>
+      </button>
+
+      <button
+        style={tab === "settings" ? styles.navBtnActive : styles.navBtn}
+        onClick={() => setTab("settings")}
+      >
+        <FaCog size={20} />
+        <span style={styles.navLabel}>Settings</span>
+      </button>
     </nav>
   );
 }
 
-// STYLES (complete — do not truncate)
+// STYLES
 const styles = {
   app: {
-    fontFamily: "Inter, Arial, sans-serif",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
     minHeight: "100vh",
-    background: "#f2f4f7",
-    color: "#111",
+    background: "#f3f4f6",
+    color: "#111827",
   },
   appDark: {
-    fontFamily: "Inter, Arial, sans-serif",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
     minHeight: "100vh",
-    background: "#060c12",
-    color: "#e6eef8",
+    background: "radial-gradient(circle at top, #111827 0, #020617 40%, #000 100%)",
+    color: "#e5e7eb",
   },
   container: {
-    padding: "16px",
+    padding: "12px 16px 0",
+    maxWidth: 960,
+    margin: "0 auto",
   },
   header: {
     position: "sticky",
     top: 0,
     zIndex: 50,
-    backdropFilter: "blur(8px)",
+    padding: "10px 16px 8px",
+    background:
+      "linear-gradient(135deg, rgba(59,130,246,0.98), rgba(236,72,153,0.98))",
+    color: "white",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.35)",
+  },
+  headerTop: {
     display: "flex",
     justifyContent: "space-between",
-    padding: "14px 18px",
-    background: "rgba(255,255,255,0.65)",
-    borderBottom: "1px solid rgba(0,0,0,0.08)",
+    alignItems: "center",
+    marginBottom: 6,
   },
   logo: {
     fontSize: 20,
     fontWeight: 900,
     letterSpacing: 0.5,
   },
-  liveCounter: {
-    fontSize: 13,
+  liveBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "4px 10px",
+    borderRadius: 999,
+    background: "rgba(15,23,42,0.75)",
+    fontSize: 12,
     fontWeight: 700,
-    color: "#0077ff",
+    gap: 2,
+  },
+  tickerShell: {
+    height: 26,
+    borderRadius: 999,
+    overflow: "hidden",
+    background: "rgba(15,23,42,0.65)",
+    border: "1px solid rgba(148,163,184,0.4)",
+  },
+  tickerTrack: {
+    whiteSpace: "nowrap",
+    animation: "tickerScroll 18s linear infinite",
+    display: "inline-block",
+  },
+  tickerText: {
+    display: "inline-block",
+    padding: "4px 16px",
+    fontSize: 12,
+    color: "#e5e7eb",
   },
   bottomNav: {
     position: "fixed",
-    bottom: 0,
     left: 0,
     right: 0,
-    height: 80,
+    bottom: 0,
+    height: 86,
+    padding: "8px 16px",
+    background: "rgba(15,23,42,0.96)",
     display: "flex",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     alignItems: "center",
-    background: "#ffffff",
-    borderTop: "1px solid rgba(0,0,0,0.1)",
-    transition: "0.3s ease",
+    boxShadow: "0 -10px 25px rgba(0,0,0,0.5)",
+    transition: "transform 0.25s ease, opacity 0.25s ease",
     zIndex: 100,
   },
   navBtn: {
+    flex: 1,
+    background: "transparent",
+    border: "none",
+    color: "#9ca3af",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    gap: 2,
+    fontSize: 11,
     cursor: "pointer",
-    fontSize: 12,
+  },
+  navBtnActive: {
+    flex: 1,
+    background: "transparent",
+    border: "none",
+    color: "#f9fafb",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 2,
+    fontSize: 11,
+    cursor: "pointer",
   },
   navLabel: {
-    marginTop: 3,
+    marginTop: 2,
   },
-  liveBtn: {
-    width: 65,
-    height: 65,
-    background: "linear-gradient(135deg,#ff5f6d,#ffc371)",
-    borderRadius: "50%",
+  liveFab: {
+    width: 66,
+    height: 66,
+    borderRadius: 999,
+    border: "3px solid #f97316",
+    background: "linear-gradient(135deg,#ef4444,#f97316)",
+    color: "white",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    boxShadow: "0 10px 30px rgba(239,68,68,0.6)",
     cursor: "pointer",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
+    transform: "translateY(-14px)",
   },
 };
-
-export default App;
