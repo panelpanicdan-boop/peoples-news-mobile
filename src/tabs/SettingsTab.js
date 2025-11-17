@@ -1,14 +1,7 @@
 // src/tabs/SettingsTab.js
-// Modern, polished Settings tab for People's News
-// Includes:
-// • Monetization application
-// • ID + address verification flow
-// • Lifetime stats (earnings, views, uploads)
-// • Light/Dark mode toggle
-// • Live eligibility panel
-// Very modern UI with glass cards, gradients, and clean typography.
+// Settings: dark mode, ticker, mock monetization, live controls
 
-import React, { useState } from "react";
+import React from "react";
 
 export default function SettingsTab({
   darkMode,
@@ -18,227 +11,266 @@ export default function SettingsTab({
   isLive,
   handleGoLive,
   stopLive,
+  showTicker,
+  setShowTicker,
+  tickerMode,
+  setTickerMode,
+  tickerText,
+  setTickerText,
 }) {
-  const [isMonetized, setIsMonetized] = useState(false);
-  const [stats] = useState({
-    earnings: 152.75,
-    views: 12840,
-    uploads: 42,
-  });
+  const monetized = user.verified; // simple flag
 
-  function verifyIdentity() {
-    setUser({ ...user, verified: true });
-    alert("Identity verified (mock)");
+  function toggleVerified() {
+    setUser({ ...user, verified: !user.verified });
   }
 
-  function verifyAddress() {
-    alert("Address verified (mock)");
+  function onModeChange(e) {
+    const value = e.target.value;
+    setTickerMode(value);
   }
 
-  const accountAgeDays = Math.floor(
-    (Date.now() - user.joinedAt) / (1000 * 60 * 60 * 24)
-  );
-
-  const canGoLive = user.verified && accountAgeDays >= 7;
+  const isCustom = tickerMode === "custom";
 
   return (
     <section style={styles.page}>
       <h2 style={styles.title}>Settings</h2>
 
-      {/* ---- Monetization Card ---- */}
+      {/* Appearance */}
       <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Monetization</h3>
+        <h3 style={styles.cardTitle}>Appearance</h3>
+        <label style={styles.row}>
+          <span>Dark mode</span>
+          <input
+            type="checkbox"
+            checked={darkMode}
+            onChange={(e) => setDarkMode(e.target.checked)}
+          />
+        </label>
+      </div>
 
-        {!isMonetized ? (
-          <button style={styles.applyBtn} onClick={() => setIsMonetized(true)}>
-            Apply for Monetization
-          </button>
-        ) : (
-          <div style={styles.sectionColumn}>
-            <button style={styles.actionBtn} onClick={verifyIdentity}>
-              Verify Identity
-            </button>
-            <button style={styles.actionBtn} onClick={verifyAddress}>
-              Verify Address
-            </button>
-            <button style={styles.statsBtn}>
-              Lifetime Earnings: ${stats.earnings}
-            </button>
-            <button style={styles.statsBtn}>
-              Total Views: {stats.views.toLocaleString()}
-            </button>
-            <button style={styles.statsBtn}>Total Uploads: {stats.uploads}</button>
+      {/* Ticker settings */}
+      <div style={styles.card}>
+        <h3 style={styles.cardTitle}>Ticker</h3>
+
+        <label style={styles.row}>
+          <span>Show ticker</span>
+          <input
+            type="checkbox"
+            checked={showTicker}
+            onChange={(e) => setShowTicker(e.target.checked)}
+          />
+        </label>
+
+        <div style={{ marginTop: 10 }}>
+          <label style={{ fontSize: 13, fontWeight: 600 }}>Ticker source</label>
+          <select
+            value={tickerMode}
+            onChange={onModeChange}
+            style={styles.select}
+          >
+            <option value="stocks">Stocks</option>
+            <option value="breaking">Breaking News</option>
+            <option value="weather">Weather Alerts</option>
+            <option value="traffic">Traffic Updates</option>
+            <option value="local">Local Alerts</option>
+            <option value="all">All Combined</option>
+            <option value="custom">Custom Text</option>
+          </select>
+        </div>
+
+        {isCustom && (
+          <div style={{ marginTop: 10 }}>
+            <label style={{ fontSize: 13, fontWeight: 600 }}>Custom ticker text</label>
+            <textarea
+              value={tickerText}
+              onChange={(e) => setTickerText(e.target.value)}
+              placeholder="Enter your own ticker text..."
+              style={styles.textArea}
+            />
+          </div>
+        )}
+
+        {!isCustom && (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
+              Preview:
+            </div>
+            <div style={styles.previewBox}>{tickerText}</div>
           </div>
         )}
       </div>
 
-      {/* ---- Appearance ---- */}
+      {/* Monetization + verification */}
       <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Appearance</h3>
-        <button style={styles.themeToggle} onClick={() => setDarkMode(!darkMode)}>
-          Switch to {darkMode ? "Light" : "Dark"} Mode
+        <h3 style={styles.cardTitle}>Monetization (mock)</h3>
+
+        <p style={styles.desc}>
+          Verified reporters can earn from their uploads. This section is a mock of how
+          ID verification and stats could look.
+        </p>
+
+        <button style={styles.primaryBtn} onClick={toggleVerified}>
+          {monetized ? "Disable verification (mock)" : "Start verification (mock)"}
         </button>
+
+        {monetized && (
+          <div style={{ marginTop: 12 }}>
+            <div style={styles.statsRow}>
+              <span>Lifetime earnings</span>
+              <strong>$1,240.50</strong>
+            </div>
+            <div style={styles.statsRow}>
+              <span>Total views</span>
+              <strong>84,320</strong>
+            </div>
+            <div style={styles.statsRow}>
+              <span>Paid clips</span>
+              <strong>32</strong>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ---- Live Controls ---- */}
+      {/* Live controls */}
       <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Live Access</h3>
-
-        <div style={styles.liveInfoRow}>
-          <span style={styles.liveLabel}>Account Age:</span>
-          <span style={styles.liveValue}>{accountAgeDays} days</span>
-        </div>
-
-        <div style={styles.liveInfoRow}>
-          <span style={styles.liveLabel}>Verified:</span>
-          <span style={styles.liveValue}>{user.verified ? "Yes" : "No"}</span>
-        </div>
-
+        <h3 style={styles.cardTitle}>Live controls</h3>
+        <p style={styles.desc}>
+          Only verified users with an account age over 7 days can go live. This is a mock
+          of how the toggle might behave.
+        </p>
         {!isLive ? (
-          <button
-            style={canGoLive ? styles.goLiveBtn : styles.disabledBtn}
-            onClick={canGoLive ? handleGoLive : undefined}
-          >
-            {canGoLive
-              ? "Start Live Broadcast"
-              : "Verify + Wait 7 Days to Go Live"}
+          <button style={styles.primaryBtn} onClick={handleGoLive}>
+            Go live (mock)
           </button>
         ) : (
-          <button style={styles.endLiveBtn} onClick={stopLive}>
-            End Live
+          <button style={styles.dangerBtn} onClick={stopLive}>
+            Stop live (mock)
           </button>
         )}
+      </div>
+
+      {/* Account actions */}
+      <div style={styles.card}>
+        <h3 style={styles.cardTitle}>Account</h3>
+        <p style={styles.desc}>These actions are mock-only in this prototype.</p>
+        <div style={styles.rowButtons}>
+          <button style={styles.secondaryBtn}>Change password (mock)</button>
+          <button style={styles.secondaryBtn}>Sign out (mock)</button>
+        </div>
+        <button style={styles.dangerOutlineBtn}>Delete account (mock)</button>
       </div>
     </section>
   );
 }
 
-// ------------------ Styles ------------------
 const styles = {
   page: {
-    paddingBottom: 30,
+    paddingBottom: 40,
   },
-
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 800,
-    marginBottom: 18,
-  },
-
-  card: {
-    background: "rgba(255,255,255,0.75)",
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 26,
-    boxShadow: "0 10px 26px rgba(0,0,0,0.08)",
-    backdropFilter: "blur(10px)",
-  },
-
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 700,
     marginBottom: 14,
   },
-
-  /* ---- Buttons ---- */
-  applyBtn: {
-    width: "100%",
-    padding: "12px 16px",
-    background: "linear-gradient(135deg,#4facfe,#00f2fe)",
-    borderRadius: 12,
-    border: "none",
-    color: "white",
-    fontWeight: 700,
-    cursor: "pointer",
+  card: {
+    padding: 14,
+    marginBottom: 14,
+    borderRadius: 14,
+    background: "#ffffff",
+    boxShadow: "0 8px 20px rgba(15,23,42,0.16)",
+  },
+  cardTitle: {
     fontSize: 15,
-  },
-
-  actionBtn: {
-    padding: "10px 14px",
-    borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.15)",
-    background: "white",
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-
-  statsBtn: {
-    padding: "10px 14px",
-    borderRadius: 12,
-    background: "#f7f7f7",
-    border: "none",
-    textAlign: "left",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-
-  themeToggle: {
-    padding: "10px 14px",
-    borderRadius: 12,
-    background: "#222",
-    color: "white",
-    border: "none",
-    cursor: "pointer",
     fontWeight: 700,
+    marginBottom: 8,
   },
-
-  /* ---- Layout helpers ---- */
-  sectionColumn: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-  },
-
-  liveInfoRow: {
+  row: {
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: 8,
+    alignItems: "center",
+    fontSize: 14,
+    marginTop: 4,
+  },
+  select: {
+    width: "100%",
+    marginTop: 4,
+    padding: "6px 8px",
+    borderRadius: 8,
+    border: "1px solid #d1d5db",
     fontSize: 14,
   },
-
-  liveLabel: {
-    color: "#555",
-  },
-
-  liveValue: {
-    fontWeight: 700,
-  },
-
-  /* ---- Live Buttons ---- */
-  goLiveBtn: {
-    marginTop: 16,
+  textArea: {
     width: "100%",
-    padding: "12px 16px",
-    background: "linear-gradient(135deg,#ff5f6d,#ffc371)",
+    marginTop: 4,
+    minHeight: 60,
+    padding: 8,
+    borderRadius: 8,
+    border: "1px solid #d1d5db",
+    fontSize: 13,
+    resize: "vertical",
+    fontFamily: "inherit",
+  },
+  previewBox: {
+    padding: 8,
+    borderRadius: 8,
+    background: "#f3f4f6",
+    fontSize: 12,
+  },
+  desc: {
+    fontSize: 13,
+    color: "#6b7280",
+    marginBottom: 8,
+  },
+  primaryBtn: {
+    marginTop: 4,
+    padding: "8px 12px",
+    borderRadius: 999,
     border: "none",
-    borderRadius: 12,
-    color: "white",
-    fontWeight: 700,
-    fontSize: 16,
-    cursor: "pointer",
-    boxShadow: "0 6px 18px rgba(255,95,109,0.3)",
-  },
-
-  disabledBtn: {
-    marginTop: 16,
-    width: "100%",
-    padding: "12px 16px",
-    background: "#ccc",
-    borderRadius: 12,
-    color: "#555",
-    fontWeight: 600,
-    cursor: "not-allowed",
-  },
-
-  endLiveBtn: {
-    marginTop: 16,
-    width: "100%",
-    padding: "12px 16px",
-    background: "#111",
-    borderRadius: 12,
-    color: "white",
+    background: "linear-gradient(135deg,#2563eb,#ec4899)",
+    color: "#fff",
     fontWeight: 700,
     cursor: "pointer",
-    fontSize: 16,
+  },
+  secondaryBtn: {
+    padding: "6px 10px",
+    borderRadius: 999,
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  dangerBtn: {
+    marginTop: 4,
+    padding: "8px 12px",
+    borderRadius: 999,
+    border: "none",
+    background: "linear-gradient(135deg,#ef4444,#b91c1c)",
+    color: "#fff",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  dangerOutlineBtn: {
+    marginTop: 8,
+    padding: "8px 12px",
+    borderRadius: 999,
+    border: "1px solid #b91c1c",
+    background: "transparent",
+    color: "#b91c1c",
+    fontWeight: 700,
+    cursor: "pointer",
+    width: "100%",
+  },
+  statsRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 13,
+    marginTop: 4,
+  },
+  rowButtons: {
+    display: "flex",
+    gap: 8,
+    marginTop: 6,
+    marginBottom: 6,
+    flexWrap: "wrap",
   },
 };
