@@ -244,3 +244,72 @@ const styles = {
     minHeight: "100vh",
     background: "#060c12",
     color: "#e6eef8",
+  },
+
+  container: {
+    padding: "16px",
+  },
+
+  header: {
+    position: "sticky",
+    top: 0,
+    zIndex: 50,
+    backdropFilter: "blur(8px)",
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "14px 18px",
+    background: "rgba(255,255,255,0.65)",
+    borderBottom: "1px solid rgba(0,0,0,0.08)",
+  },
+
+  logo: {
+    fontSize: 20,
+    fontWeight: 900,
+    letterSpacing: 0.5,
+  },
+
+  liveCounter: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#0077ff",
+  },
+
+  bottomNav: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    display: "flex",
+    justifyContent: "space-around",
+    alignItems: "center",
+    background: "#ffffff",
+    borderTop: "1px solid rgba(0,0,0,0.1)",
+    transition: "0.3s ease",
+    zIndex: 100,
+  },
+
+  navBtn: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    cursor: "pointer",
+    fontSize: 12,
+  },
+
+  navLabel: {
+    marginTop: 3,
+  },
+
+  liveBtn: {
+    width: 65,
+    height: 65,
+    background: "linear-gradient(135deg,#ff5f6d,#ffc371)",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
+  },
+};
