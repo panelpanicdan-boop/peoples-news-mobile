@@ -1,4 +1,6 @@
-// src/tabs/FeedTab.js — FULLY UPDATED FOR MODAL VIEWER
+// PREMIUM FEEDTAB.JS — OVERLAY AD REMOVED, PREMIUM UI, SMOOTH EFFECTS
+// Drop-in replacement for your current FeedTab.js
+
 import React from "react";
 import AdCard from "../components/AdCard";
 
@@ -23,7 +25,7 @@ export default function FeedTab({ posts, feedMode, setFeedMode, setModalPost }) 
 
       {/* FEED LIST */}
       <div>
-        {posts.map((p) => (
+        {posts.map((p) =>
           p.ad ? (
             <AdCard key={p.id} ad={p} />
           ) : (
@@ -40,7 +42,7 @@ export default function FeedTab({ posts, feedMode, setFeedMode, setModalPost }) 
               </div>
             </div>
           )
-        ))}
+        )}
       </div>
     </section>
   );
@@ -48,56 +50,74 @@ export default function FeedTab({ posts, feedMode, setFeedMode, setModalPost }) 
 
 const styles = {
   page: {
-    paddingBottom: 30,
+    paddingBottom: 40,
+    paddingTop: 10,
   },
+
+  // --- FEED MODE SWITCH ---
   toggleRow: {
     display: "flex",
     justifyContent: "center",
-    gap: 10,
+    gap: 12,
     marginBottom: 20,
   },
   modeBtn: {
-    padding: "8px 16px",
-    background: "#ddd",
+    padding: "8px 18px",
+    background: "#e4e7eb",
     border: "none",
-    borderRadius: 10,
+    borderRadius: 12,
     cursor: "pointer",
+    fontWeight: 600,
+    transition: "0.25s",
   },
   modeActive: {
-    padding: "8px 16px",
-    background: "#0077ff",
+    padding: "8px 18px",
+    background: "linear-gradient(135deg,#0077ff,#00c2ff)",
     color: "white",
     border: "none",
-    borderRadius: 10,
+    borderRadius: 12,
     cursor: "pointer",
-    boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
+    fontWeight: 700,
+    boxShadow: "0 4px 14px rgba(0,0,0,0.22)",
+    transition: "0.25s",
   },
+
+  // --- POST CARD ---
   card: {
     background: "white",
-    borderRadius: 14,
-    marginBottom: 18,
+    borderRadius: 18,
+    marginBottom: 22,
     overflow: "hidden",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.18)",
     cursor: "pointer",
+    transition: "transform 0.25s ease, box-shadow 0.25s ease",
   },
+
   img: {
     width: "100%",
-    height: 240,
+    height: 260,
     objectFit: "cover",
   },
+
   cardBody: {
-    padding: 12,
+    padding: 14,
   },
+
   user: {
-    fontWeight: 700,
+    fontWeight: 800,
     marginBottom: 6,
+    fontSize: 15,
   },
+
   text: {
     fontSize: 14,
-    marginBottom: 8,
+    marginBottom: 10,
+    lineHeight: 1.4,
   },
+
   stats: {
     fontSize: 12,
-    color: "#777",
+    color: "#6b7280",
+    fontWeight: 500,
   },
 };
