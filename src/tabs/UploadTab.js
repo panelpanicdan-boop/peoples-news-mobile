@@ -1,238 +1,186 @@
-// src/tabs/UploadTab.js — Modern uploader for People’s News
+// src/tabs/UploadTab.js — Upload photo OR text-only posts
 
 import React, { useState } from "react";
 
 export default function UploadTab({ posts, setPosts }) {
-  const [img, setImg] = useState(null);
-  const [title, setTitle] = useState("");
+  const [mode, setMode] = useState("photo"); // "photo" or "text"
   const [desc, setDesc] = useState("");
-  const [category, setCategory] = useState("Event");
-  const [dragging, setDragging] = useState(false);
+  const [file, setFile] = useState(null);
 
-  function handleFileChange(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => setImg(reader.result);
-    reader.readAsDataURL(file);
+  function handleFile(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    setFile({
+      url: URL.createObjectURL(f),
+      type: f.type,
+      name: f.name,
+    });
   }
 
-  function handleDrop(e) {
-    e.preventDefault();
-    setDragging(false);
+  function submit() {
+    if (!desc && mode === "text") {
+      return alert("Please enter some text for your update.");
+    }
 
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
+    // TEXT-ONLY MODE
+    if (mode === "text") {
+      const newPost = {
+        id: "txt_" + Date.now(),
+        user: "You",
+        cat: "Update",
+        text: desc || "(no description)",
+        views: 0,
+        type: "text",
+      };
+      setPosts([newPost, ...posts]);
+      setDesc("");
+      alert("Text update posted (mock)");
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onload = () => setImg(reader.result);
-    reader.readAsDataURL(file);
-  }
+    // PHOTO MODE
+    if (mode === "photo") {
+      if (!file) return alert("Please select an image to upload.");
 
-  function handleUpload() {
-    if (!img) return alert("Please upload or drop a photo.");
-    if (!title.trim()) return alert("Please enter a title.");
-
-    const newPost = {
-      id: "up_" + Date.now(),
-      user: "You",
-      cat: category,
-      text: title + (desc ? " — " + desc : ""),
-      img,
-      views: 0,
-    };
-
-    setPosts([newPost, ...posts]);
-
-    alert("Upload complete! (mock)");
-
-    setImg(null);
-    setTitle("");
-    setDesc("");
-    setCategory("Event");
+      const newPost = {
+        id: "img_" + Date.now(),
+        user: "You",
+        cat: "Event",
+        text: desc || "(no description)",
+        img: file.url,
+        views: 0,
+      };
+      setPosts([newPost, ...posts]);
+      setDesc("");
+      setFile(null);
+      alert("Photo uploaded (mock)");
+      return;
+    }
   }
 
   return (
     <section style={styles.page}>
-      <h2 style={styles.title}>Upload Report</h2>
+      <h2 style={styles.title}>Upload</h2>
 
-      {/* CATEGORY SELECTOR */}
-      <div style={styles.card}>
-        <label style={styles.label}>Category</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={styles.select}
+      {/* MODE TOGGLE */}
+      <div style={styles.modeRow}>
+        <button
+          style={mode === "photo" ? styles.modeActive : styles.modeBtn}
+          onClick={() => setMode("photo")}
         >
-          <option>Event</option>
-          <option>Accident</option>
-          <option>Traffic</option>
-          <option>Weather</option>
-          <option>Police</option>
-          <option>Fire</option>
-          <option>Emergency</option>
-          <option>Entertainment</option>
-          <option>Local News</option>
-          <option>Community</option>
-        </select>
+          Photo
+        </button>
+        <button
+          style={mode === "text" ? styles.modeActive : styles.modeBtn}
+          onClick={() => setMode("text")}
+        >
+          Text only
+        </button>
       </div>
 
-      {/* TITLE */}
       <div style={styles.card}>
-        <label style={styles.label}>Title</label>
-        <input
-          style={styles.input}
-          placeholder="Short headline for your report"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
-
-      {/* DESCRIPTION */}
-      <div style={styles.card}>
-        <label style={styles.label}>Description (optional)</label>
+        <label style={styles.label}>Description</label>
         <textarea
-          style={styles.textarea}
-          placeholder="Describe what happened..."
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
+          placeholder={
+            mode === "text"
+              ? "Type your traffic, weather, or local news update..."
+              : "Describe what happened..."
+          }
+          style={styles.textArea}
         />
-      </div>
 
-      {/* UPLOAD AREA */}
-      <div
-        style={{
-          ...styles.drop,
-          borderColor: dragging ? "#4facfe" : "#aaa",
-          background: dragging ? "rgba(79,172,254,0.1)" : "#fafafa",
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={handleDrop}
-      >
-        {img ? (
-          <img src={img} style={styles.preview} alt="preview" />
-        ) : (
-          <div style={styles.dropText}>
-            Drag & drop a photo here<br />or click to choose a file
-          </div>
+        {mode === "photo" && (
+          <>
+            <div style={{ marginTop: 10 }}>
+              <input type="file" accept="image/*" onChange={handleFile} />
+            </div>
+
+            {file && (
+              <div style={{ marginTop: 10 }}>
+                <img
+                  src={file.url}
+                  alt="preview"
+                  style={{ width: "100%", borderRadius: 10 }}
+                />
+              </div>
+            )}
+          </>
         )}
 
-        <input
-          type="file"
-          accept="image/*"
-          style={styles.fileInput}
-          onChange={handleFileChange}
-        />
+        <button style={styles.submitBtn} onClick={submit}>
+          Post
+        </button>
       </div>
-
-      {/* UPLOAD BUTTON */}
-      <button style={styles.uploadBtn} onClick={handleUpload}>
-        Upload Report
-      </button>
     </section>
   );
 }
 
 const styles = {
   page: {
-    paddingBottom: 150,
+    paddingBottom: 40,
   },
-
   title: {
     fontSize: 22,
-    fontWeight: 900,
-    marginBottom: 20,
+    fontWeight: 800,
+    marginBottom: 14,
   },
-
-  card: {
-    background: "white",
-    padding: 14,
-    borderRadius: 14,
-    marginBottom: 16,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  modeRow: {
+    display: "flex",
+    gap: 10,
+    marginBottom: 14,
   },
-
-  label: {
-    fontSize: 14,
+  modeBtn: {
+    flex: 1,
+    padding: "8px 10px",
+    borderRadius: 10,
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+  modeActive: {
+    flex: 1,
+    padding: "8px 10px",
+    borderRadius: 10,
+    border: "none",
+    background: "linear-gradient(135deg,#2563eb,#ec4899)",
+    color: "white",
+    cursor: "pointer",
     fontWeight: 700,
-    marginBottom: 6,
-    display: "block",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
   },
-
-  select: {
-    width: "100%",
-    padding: 10,
-    borderRadius: 8,
-    border: "1px solid #ccc",
+  card: {
+    padding: 16,
+    background: "#ffffff",
+    borderRadius: 16,
+    boxShadow: "0 10px 24px rgba(15,23,42,0.16)",
+  },
+  label: {
+    fontWeight: 700,
     fontSize: 14,
   },
-
-  input: {
-    width: "100%",
-    padding: 10,
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    fontSize: 14,
-  },
-
-  textarea: {
+  textArea: {
     width: "100%",
     minHeight: 80,
-    padding: 10,
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    fontSize: 14,
+    marginTop: 6,
+    padding: 8,
+    borderRadius: 10,
+    border: "1px solid #d1d5db",
     resize: "vertical",
-  },
-
-  drop: {
-    marginTop: 10,
-    marginBottom: 20,
-    padding: 20,
-    border: "2px dashed #aaa",
-    borderRadius: 16,
-    textAlign: "center",
-    cursor: "pointer",
-    position: "relative",
-  },
-
-  dropText: {
-    color: "#666",
+    fontFamily: "inherit",
     fontSize: 14,
-    padding: 30,
   },
-
-  preview: {
+  submitBtn: {
+    marginTop: 14,
     width: "100%",
-    maxHeight: 300,
-    objectFit: "cover",
-    borderRadius: 12,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-  },
-
-  fileInput: {
-    position: "absolute",
-    inset: 0,
-    opacity: 0,
-    cursor: "pointer",
-  },
-
-  uploadBtn: {
-    width: "100%",
-    padding: 14,
-    marginTop: 10,
-    background: "linear-gradient(135deg, #4facfe, #00f2fe)",
-    color: "white",
-    fontSize: 16,
-    fontWeight: 700,
+    padding: "10px 14px",
     borderRadius: 12,
     border: "none",
+    background: "linear-gradient(135deg,#22c55e,#16a34a)",
+    color: "white",
+    fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
   },
 };
